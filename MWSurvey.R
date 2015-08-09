@@ -7,16 +7,31 @@ MWplottofile <- function(variable) {
 ## .N counts variables (might need to use data.table instead of data frame)
 ## df alternative table(df$x)
 
-MWplot <- function(variable, controlcol = NULL) {
+MWplot <- function(variable, controlcol, controlval) {
     
     ## Read variable data
-    ## ***** add row.names parameter to simplify row names! ***** 
-    ## ***** try na.strings = "" to set blanks to NA (possibly not necessary) *****
     ## ***** try quote="" to remove quotes from a few values *****
-    df <- read.csv("MWSurvey.csv", colClasses = "factor", na.strings=c(""," ","NA"))
+    colnames <- c("timestamp"
+                  ,"orgsize"
+                  ,"years"
+                  ,"numsites"
+                  ,"privacy"
+                  ,"users"
+                  ,"version"
+                  ,"updates"
+                  ,"extensions"
+                  ,"purpose"
+                  ,"coreimprovements"
+                  ,"communityimprovements"
+                  ,"contributions"
+                  ,"barriers")
+    df <- read.csv("MWSurvey.csv"
+                   , colClasses = "factor"
+                   , col.names = colnames
+                   , na.strings=c(""," ","NA"))
     if(!is.null(controlcol)){
-        split_df <- split(df, df[controlcol])
-        df <- split_df
+        split_df <- split(df, df[[controlcol]])
+        df <- split_df[[controlval]] 
     }
     
     orgsize <- factor(df[,2],
@@ -181,47 +196,95 @@ MWplotall <- function() {
 }
 
 
-MWplotallconstrained <- function(control=NULL) {
-    png(file="MWallplotsconstrained.png",width=1600,height=1600,res=140)
+
+MWplotconstrained <- function(control, valuename) {
     
-    controlcol <- NULL
-    if(!is.null(control)){switch(control,
-        "orgsize" = { controlcol <- 2 #"How.large.is.your.organization."
-            }
-        ,"years" = { controlcol <- 3 #"How.long.have.you.been.using.MediaWiki."
-            }
-        ,"numsites" = { controlcol <- 4 #"How.many.MediaWiki.sites.do.you.manage."
-            }
-        ,"privacy" = { controlcol <- 5 #"Are.your.sites.public.or.private."
-            }
-        ,"users" = { controlcol <- 6 #"Approximately.how.many.people.are.there.on.your.MediaWiki.sites."
-            }
-        ,"version" = { controlcol <- 7 #"What.MediaWiki.Version.are.you.currently.using."
-            }
-        ,"updates" = { controlcol <- 8 #"Which.MediaWiki.update.cycle.is.closest.to.what.you.use."
-            }
-        , stop("invalid variable") ## default
-    )}
+    filenamebase <- "MWallplotsconstrained-"
+    filename <- paste( filenamebase
+                       , control
+                       , '-'
+                       , valuename
+                       , '.png'
+                       , sep='' )
+    png(file=filename
+        ,width=1600,height=1600,res=140)
+    
+    controlcol <- control #The data column on which to split
+    #   "orgsize" = 2 #"How.large.is.your.organization."
+    #   ,"years" = 3 #"How.long.have.you.been.using.MediaWiki."
+    #   ,"numsites" = 4 #"How.many.MediaWiki.sites.do.you.manage."
+    #   ,"privacy" = 5 #"Are.your.sites.public.or.private."
+    #   ,"users" = 6 #"Approximately.how.many.people.are.there.on.your.MediaWiki.sites."
+    #   ,"version" = 7 #"What.MediaWiki.Version.are.you.currently.using."
+    #   ,"updates" = 8 #"Which.MediaWiki.update.cycle.is.closest.to.what.you.use."
+    
+    controlval <- valuename   #The value of that column to plot
     
     #par(mfrow=c(3,1))
     
-    #     layout(matrix(c(1,2,3,4,6,5,6,7), 4, 2, byrow = TRUE) 
-    #            , widths=c(2.5,1.5)#, heights=c(1,2)
-    #     )
-    layout(matrix(c(1,2,3,4,5,7,6,6,6,6,6,6), 6, 2, byrow = TRUE) 
-           #, widths=c(2.5,1.5)#, heights=c(1,2)
-    )
+    layout(matrix(c(1,2,3,4,5,7,6,6,6,6,6,6), 6, 2, byrow = TRUE) )
     
-    MWplot("orgsize", controlcol)   #1
-    MWplot("years", controlcol)     #2
-    MWplot("numsites", controlcol)  #3
-    MWplot("privacy", controlcol)   #4
-    MWplot("users", controlcol)     #5
-    MWplot("version", controlcol)   #6
-    MWplot("updates", controlcol)   #7
+    MWplot("orgsize", controlcol, controlval)   #1
+    MWplot("years", controlcol, controlval)     #2
+    MWplot("numsites", controlcol, controlval)  #3
+    MWplot("privacy", controlcol, controlval)   #4
+    MWplot("users", controlcol, controlval)     #5
+    MWplot("version", controlcol, controlval)   #6
+    MWplot("updates", controlcol, controlval)   #7
     par(mfrow=c(1,1))
     
     dev.off()
+    
+}
+
+
+
+MWplotallconstrained <- function(control="orgsize") {
+    
+    # names of values for each of multiple plots for one constraint
+    valuename <- switch(control,
+    "orgsize" = c(#"Not sure",
+                "More than 500 people"
+                ,"100-500 people"
+                ,"25-100 people"
+                ,"Fewer than 25 people"
+                ,"Just Me"
+                ),
+    "years" = c("5+ years"
+            ,"3-5 years"
+            ,"1-2 years"
+            ,"Less than 6 months"
+            ),
+    "numsites" = c("More than 10"
+                ,"5-10"
+                ,"2-5"
+                ,"1"
+                ,"0"
+                ),
+    "privacy" = c("Mix of Both"
+               ,"Private"
+               ,"Public"
+               ),
+    "users" = c("More than 500 people"
+            ,"100-500 people"
+            ,"25-100 people"
+            ,"Fewer than 25 people"
+            ,"Just me"
+            ),
+    "updates" = c("Every security release"
+            ,"Every minor point release"
+            ,"Every major release"
+            ,"Every 3 months"
+            ,"Every 6 months"
+            ,"OS Packaged Version" ## (e.g. Debian, Redhat)"
+            ,"When needed"
+            )
+    )
+
+    for(i in seq_along(valuename)){
+        MWplotconstrained(control, valuename[i])
+    }
+    
 }
 
 
