@@ -154,6 +154,7 @@ MWplot <- function(variable, controlcol, controlval) {
 }
 
 MWplotall <- function() {
+
     png(file="MWallplots.png",width=1600,height=1600,res=140)
 
 #     if(!is.null(control)){switch(control,
@@ -199,15 +200,19 @@ MWplotall <- function() {
 
 MWplotconstrained <- function(control, valuename) {
     
-    filenamebase <- "MWallplotsconstrained-"
+    filenamebase <- "./plots/MWallplotsconstrained-"
     filename <- paste( filenamebase
                        , control
                        , '-'
                        , valuename
                        , '.png'
                        , sep='' )
-    png(file=filename
-        ,width=1600,height=1600,res=140)
+
+    
+    
+    #Uncomment these lines to output to a .png file
+        png(file=filename
+         ,width=1600,height=1600,res=140)
     
     controlcol <- control #The data column on which to split
     #   "orgsize" = 2 #"How.large.is.your.organization."
